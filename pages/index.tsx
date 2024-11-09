@@ -1,58 +1,48 @@
-import Image from "next/image";
+import React, { useEffect, useState } from 'react';
+import { signInWithGoogle } from '../services/auth';
+import { useRouter } from 'next/router';
+import { FcGoogle } from 'react-icons/fc';
 
-export default function Home() {
+const HomePage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleGoogleLogin = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      await signInWithGoogle();
+      router.push('/home');
+    } catch (error) {
+      console.error('Error during Google login:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (token === null || token === 'undefined' || /^\s*$/.test(token)) {
+      router.push(`/`)
+    } else {
+      router.push(`/home`)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <div className="bg-black h-screen w-screen">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className='flex bg-gradient-to-r from-[#039ae5] via-[#28b5f6] to-[#b3e5fc] w-screen h-screen justify-center items-center'>
+      <button
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+        className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <FcGoogle size={24} className="mr-2" />
+        {isLoading ? 'Logging in...' : 'Sign in with Google'}
+      </button>
     </div>
   );
-}
+};
+
+export default HomePage;

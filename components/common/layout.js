@@ -1,3 +1,5 @@
+import Navbar from "@/components/Navbar";
+
 export function Layouts({ children }) {
   return (
     <div
@@ -8,11 +10,11 @@ export function Layouts({ children }) {
 
       </div>
       <div className="w-full">
-        <div className="grid h-screen">
-          <div className="flex md:hidden">
-
+        <div className="flex flex-col h-screen">
+          <div className="flex">
+            <Navbar />
           </div>
-          <div className="pt-8 overflow-y-auto"> {children}</div>
+          <div className="flex h-full overflow-y-auto"> {children}</div>
         </div>
       </div>
 
