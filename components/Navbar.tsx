@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 import { logOut } from '@/services/auth';
 import { useRouter } from 'next/router';
@@ -6,7 +6,16 @@ import { useRouter } from 'next/router';
 const Navbar = () => {
     const user = useAuth();
     const router = useRouter();
-    console.log(user);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken')
+        if (token === null || token === 'undefined' || /^\s*$/.test(token)) {
+            router.push(`/`)
+        } else {
+            router.push(`/home`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const handleLogout = async () => {
         try {

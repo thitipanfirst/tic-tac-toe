@@ -1,25 +1,34 @@
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { doc, setDoc, getDoc, } from 'firebase/firestore';
 
+interface UserData {
+    score: number;
+    winStreak: number;
+}
 
-export const getItems = async (collectionName: string) => {
-    const querySnapshot = await getDocs(collection(db, collectionName));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+export const saveUserData = async (userId: string, score: number, winStreak: number): Promise<void> => {
+    try {
+        await setDoc(doc(db, 'users', userId), {
+            score,
+            winStreak,
+        });
+        console.log("Data saved successfully");
+    } catch (error) {
+        console.error("Error saving data: ", error);
+    }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const addItem = async (collectionName: string, data: Record<string, any>) => {
-    return await addDoc(collection(db, collectionName), data);
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const updateItem = async (collectionName: string, id: string, data: Record<string, any>) => {
-    const docRef = doc(db, collectionName, id);
-    return await updateDoc(docRef, data);
-};
-
-// Delete a document
-export const deleteItem = async (collectionName: string, id: string) => {
-    const docRef = doc(db, collectionName, id);
-    return await deleteDoc(docRef);
+export const getUserData = async (userId: string): Promise<UserData | null> => {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+            return userDoc.data() as UserData;
+        } else {
+            console.log("No such document!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        return null;
+    }
 };

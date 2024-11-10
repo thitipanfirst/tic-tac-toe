@@ -1,3 +1,5 @@
+import useAuth from '@/hooks/useAuth';
+import { getUserData, saveUserData } from '@/services/firestore';
 import React, { useState, useEffect } from 'react';
 
 type Player = 'X' | 'O' | null;
@@ -9,6 +11,21 @@ const Home = () => {
     const [winStreak, setWinStreak] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [wordEnd, setWordEnd] = useState('');
+    const user = useAuth();
+
+    useEffect(() => {
+        if (!user) return
+        const loadUserData = async () => {
+            const data = await getUserData(user.uid);
+            if (data) {
+                setScore(data.score);
+                setWinStreak(data.winStreak);
+            }
+        };
+
+        loadUserData();
+    }, [user]);
+
 
     const handleClick = (index: number) => {
         if (board[index] || !isPlayerTurn || gameOver) return;
@@ -86,8 +103,7 @@ const Home = () => {
             }
         }
 
-        // ให้บอททำการสุ่มตำแหน่งเมื่อถึงเวลา
-        if (Math.random() < 0.2) {  // 20% โอกาสในการทำผิดพลาด
+        if (Math.random() < 0.2) {
             const emptyCells = board.map((value, index) => value === null ? index : -1).filter(index => index !== -1);
             bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
@@ -117,21 +133,41 @@ const Home = () => {
 
         if (winner) {
             if (winner === 'X') {
-                setScore(prev => prev + 1);
+                setScore(prev => {
+                    if (user) {
+                        saveUserData(user.uid, prev + 1, winStreak + 1);
+                    }
+                    return prev + 1
+                })
                 setWinStreak(prev => prev + 1);
-
                 if (winStreak + 1 === 3) {
-                    setScore(prev => prev + 1);
+                    setScore(prev => {
+                        if (user) {
+                            saveUserData(user.uid, prev + 1, 0);
+                        }
+                        return prev + 1
+                    })
                     setWinStreak(0);
                 }
                 setWordEnd('You win!')
             } else if (winner === 'O') {
-                setScore(prev => prev - 1);
+                setScore(prev => {
+                    if (user) {
+                        saveUserData(user.uid, prev - 1, 0);
+                    }
+                    return prev - 1
+                })
                 setWinStreak(0);
                 setWordEnd('Game Over!')
             } else if (winner === 'draw') {
                 setWinStreak(0);
-                setWordEnd('draw')
+                setScore(prev => {
+                    if (user) {
+                        saveUserData(user.uid, prev, 0);
+                    }
+                    return prev
+                })
+                setWordEnd('Draw')
             }
             setGameOver(true);
         } else if (!isPlayerTurn && !gameOver) {
@@ -142,11 +178,11 @@ const Home = () => {
     return (
         <div className="flex flex-col items-center space-y-4 bg-gradient-to-r from-[#039ae5] via-[#28b5f6] to-[#b3e5fc] w-full h-full justify-center">
             <h1 className="text-2xl font-bold">Tic-Tac-Toe (OX Game)</h1>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
                 {board.map((cell, index) => (
                     <button
                         key={index}
-                        className="w-20 h-20 text-2xl border-2 border-gray-400"
+                        className={`${cell === 'X' ? "text-red-500" : cell === 'O' ? 'text-blue-500' : ''}  w-20 h-20 text-4xl font-bold border-4 border-black rounded-lg`}
                         onClick={() => handleClick(index)}
                         disabled={gameOver}
                     >

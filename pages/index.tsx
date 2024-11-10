@@ -36,7 +36,7 @@ const HomePage: React.FC = () => {
       <button
         onClick={handleGoogleLogin}
         disabled={isLoading}
-        className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex items-center justify-center w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <FcGoogle size={24} className="mr-2" />
         {isLoading ? 'Logging in...' : 'Sign in with Google'}
